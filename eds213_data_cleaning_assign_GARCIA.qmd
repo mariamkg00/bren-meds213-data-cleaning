@@ -1,0 +1,50 @@
+```{r message = FALSE, warning = FALSE}
+library(tidyverse)
+library(here)
+
+
+# reading in the data 
+
+snowsurvey_file <- read_csv(here::here("data","processed","snow_cover.csv"))
+
+
+# cleaning water_cover column
+
+
+snowsurvey_file %>% 
+  filter(Water_cover == '.')
+
+# there seems to be dashes(-) and periods (.) in the Water_cover column 
+
+snowsurvey_clean <- snowsurvey_file %>% 
+  mutate(across(ends_with("_cover"), ~ifelse(.x == "-", NA,.x))) %>% 
+  mutate(across(ends_with("_cover"), ~ifelse(.x == ".", NA,.x))) %>% 
+  mutate(across(ends_with("_cover"), ~ifelse(.x == 'unk',NA,.x)))
+
+
+
+snowsurvey_clean <- snowsurvey_clean %>% 
+  
+  # water cover is currently a charcater string, converting to numeric
+  mutate(Water_cover = as.numeric(Water_cover)) %>% 
+  filter(Water_cover < 100) # filtering out values greater than 100
+  
+# cleaning land_cover column
+snowsurvey_clean <- snowsurvey_clean %>% 
+  mutate(Land_cover = as.numeric(Land_cover)) %>% 
+  filter(Land_cover >= 0) %>% 
+  mutate(Total_cover = as.numeric(Total_cover))
+# There are values of total cover that do not equal 100, starting at 0 to 15 to 95. I will remove any columns in which the totalcov is less than 100
+
+snowsurvey_clean <- snowsurvey_clean %>% 
+  filter(Total_cover == 100)
+
+
+
+## Assumptions:
+# The first assumption I made was that the columns both contained periods and dashes after looking at the water_cover column only. The second assumption I made was that any observation in which the total_cover was not equal to zero was not measured properly or the formula was not a valid observation. 
+
+
+## Decisions:
+# After inspecting the Water_Cover column, I chose to filter out any observations in which Water_Cover was greater than 100. After inspecting the Land_Cover column, I chose to filter out any values less than 0 as negative values are incorrect to have. I also chose to filter out any values in the Total_cover column that did not equal 100, and the number of rows removed was a small percentage of the original dataset. 
+```

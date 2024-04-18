@@ -187,19 +187,23 @@ We want to focus on the presence and absence of species and not the count. Let's
 
 ```{r}
 species_presence <- species_long %>% 
-  mutate(species_presence = ifelse())
+  mutate(species_presence = ifelse(species_count == '0',0,1))
 ```
 
 We can remove some columns: "Num_observers", "All_obs_reported", "Observer_hours" are here to help to compute the effort of observation but since we just want presence and absence, we do not need it. We can also remove all the zeros values to reduce the size of our data set:
 
 ```{r}
-
+species_presence <- species_presence %>% 
+  select(-c(Num_observers, All_obs_reported, Observer_hours))
 ```
 
 Last but not least, let's have a look at our species list
 
 ```{r}
-
+species_presence %>% 
+  filter(species_presence == 1) %>% 
+  count(species) %>% 
+  arrange(desc(n))
 ```
 
 We have 319 species observed in this table. The "convention" seems to be that `_` are used to separate the different parts of a name. Note that it is not clear what type of nomenclature reference is used to pull those names from.
